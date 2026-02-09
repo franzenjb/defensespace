@@ -1,0 +1,1176 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="theme-color" content="#1a1a1a">
+<title>DefenseSpace — AI Wildfire Home Assessment</title>
+<link rel="manifest" href="data:application/json;base64,eyJuYW1lIjoiRGVmZW5zZVNwYWNlIiwic2hvcnRfbmFtZSI6IkRlZmVuc2VTcGFjZSIsInN0YXJ0X3VybCI6Ii4iLCJkaXNwbGF5Ijoic3RhbmRhbG9uZSIsImJhY2tncm91bmRfY29sb3IiOiIjMWExYTFhIiwidGhlbWVfY29sb3IiOiIjMWExYTFhIn0=">
+<link href="https://fonts.googleapis.com/css2?family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&family=Source+Sans+Pro:wght@300;400;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+
+:root {
+  --red: #ED1B2E;
+  --ember: #FF6B35;
+  --amber: #F7A921;
+  --charcoal: #1a1a1a;
+  --smoke: #2d2d2d;
+  --ash-700: #4a4a4a;
+  --ash-500: #737373;
+  --ash-300: #a3a3a3;
+  --ash-100: #e5e5e5;
+  --cream: #f7f5f2;
+  --white: #ffffff;
+  --success: #2d5a27;
+  --caution: #b8860b;
+  --danger: #c41e3a;
+  --zone0: #ED1B2E;
+  --zone1: #FF6B35;
+  --zone2: #F7A921;
+  --font-display: 'Libre Baskerville', Georgia, serif;
+  --font-body: 'Source Sans Pro', 'Helvetica Neue', sans-serif;
+  --font-data: 'IBM Plex Mono', Consolas, monospace;
+  --safe-top: env(safe-area-inset-top, 0px);
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+html, body {
+  height: 100%;
+  overflow: hidden;
+  font-family: var(--font-body);
+  background: var(--charcoal);
+  color: var(--cream);
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ==================== SCREENS ==================== */
+.screen {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  transition: transform 0.4s cubic-bezier(0.4,0,0.2,1), opacity 0.4s ease;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+}
+.screen.hidden { display: none; }
+
+/* ==================== SPLASH ==================== */
+#splash {
+  background: linear-gradient(170deg, #1a1a1a 0%, #2d1a0a 40%, #3d1a00 70%, #1a1a1a 100%);
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  padding: 40px 32px;
+  position: relative;
+  overflow: hidden;
+}
+#splash::before {
+  content: '';
+  position: absolute;
+  top: -50%; left: -50%;
+  width: 200%; height: 200%;
+  background: radial-gradient(ellipse at 60% 40%, rgba(255,107,53,0.08) 0%, transparent 60%);
+  animation: glow 8s ease-in-out infinite alternate;
+}
+@keyframes glow { 0%{opacity:.3;transform:scale(1)} 100%{opacity:.7;transform:scale(1.1)} }
+
+.splash-icon { width:80px; height:80px; margin-bottom:24px; position:relative; z-index:1; }
+.splash-icon svg { width:100%; height:100%; }
+.splash-title { font-family:var(--font-display); font-size:36px; font-weight:700; line-height:1.15; margin-bottom:8px; position:relative; z-index:1; }
+.splash-title span { color:var(--ember); }
+.splash-sub { font-size:15px; color:var(--ash-300); line-height:1.5; max-width:300px; margin:0 auto 12px; position:relative; z-index:1; }
+.splash-rule { width:40px; height:3px; background:var(--red); margin:0 auto 32px; position:relative; z-index:1; }
+.splash-features { display:flex; gap:16px; justify-content:center; margin-bottom:36px; position:relative; z-index:1; }
+.splash-feat { text-align:center; }
+.splash-feat-icon { font-size:24px; margin-bottom:4px; }
+.splash-feat-text { font-family:var(--font-data); font-size:10px; color:var(--ash-500); text-transform:uppercase; letter-spacing:0.8px; }
+
+/* ==================== BUTTONS ==================== */
+.btn {
+  display:flex; align-items:center; justify-content:center; gap:10px;
+  font-family:var(--font-body); font-weight:600; font-size:16px;
+  padding:16px 32px; border:none; border-radius:12px; cursor:pointer;
+  transition:all .2s; position:relative; z-index:1;
+  width:100%; max-width:320px; -webkit-tap-highlight-color:transparent;
+}
+.btn-primary { background:var(--ember); color:white; }
+.btn-primary:active { background:#e55a28; transform:scale(.97); }
+.btn-secondary { background:rgba(255,255,255,.08); color:var(--cream); border:1px solid rgba(255,255,255,.15); }
+.btn-secondary:active { background:rgba(255,255,255,.14); }
+.btn-sm { padding:10px 20px; font-size:14px; border-radius:8px; }
+.btn-icon { width:20px; height:20px; }
+
+/* ==================== STANDARD SELECT ==================== */
+#standard-select { background:var(--charcoal); padding:calc(var(--safe-top)+24px) 24px 24px; }
+.screen-header { display:flex; align-items:center; gap:12px; margin-bottom:32px; }
+.back-btn {
+  width:40px; height:40px; border-radius:10px; background:rgba(255,255,255,.06);
+  border:none; color:var(--cream); display:flex; align-items:center; justify-content:center;
+  cursor:pointer; -webkit-tap-highlight-color:transparent; flex-shrink:0;
+}
+.screen-title { font-family:var(--font-display); font-size:22px; font-weight:700; }
+.standard-card {
+  background:var(--smoke); border-radius:16px; padding:24px; margin-bottom:16px;
+  border:2px solid transparent; cursor:pointer; transition:border-color .2s, background .2s;
+}
+.standard-card.selected { border-color:var(--ember); background:rgba(255,107,53,.06); }
+.standard-name { font-family:var(--font-display); font-size:18px; font-weight:700; margin-bottom:6px; }
+.standard-tag { display:inline-block; font-family:var(--font-data); font-size:11px; padding:3px 8px; border-radius:4px; background:rgba(255,107,53,.15); color:var(--ember); margin-bottom:10px; }
+.standard-desc { font-size:14px; color:var(--ash-300); line-height:1.5; }
+.standard-zones { display:flex; gap:8px; margin-top:14px; flex-wrap:wrap; }
+.zone-chip { font-family:var(--font-data); font-size:11px; padding:4px 10px; border-radius:20px; color:white; }
+.zone-chip.z0 { background:var(--zone0); }
+.zone-chip.z1 { background:var(--zone1); }
+.zone-chip.z2 { background:var(--zone2); }
+.spacer { flex:1; }
+
+/* ==================== CAPTURE SCREEN ==================== */
+#capture { background:var(--charcoal); }
+.cap-header {
+  padding:calc(var(--safe-top)+16px) 20px 16px;
+  background:var(--smoke); border-bottom:1px solid rgba(255,255,255,.06);
+}
+.cap-progress { display:flex; gap:4px; margin-bottom:12px; }
+.cap-dot { flex:1; height:3px; border-radius:2px; background:rgba(255,255,255,.1); transition:background .3s; }
+.cap-dot.done { background:var(--success); }
+.cap-dot.active { background:var(--ember); }
+.cap-zone-label { font-family:var(--font-data); font-size:12px; text-transform:uppercase; letter-spacing:1.5px; }
+.cap-step-title { font-family:var(--font-display); font-size:20px; font-weight:700; margin-top:4px; }
+
+.cap-body { flex:1; overflow-y:auto; -webkit-overflow-scrolling:touch; padding:24px 20px; }
+.cap-instruction { font-size:15px; color:var(--ash-300); line-height:1.6; margin-bottom:20px; }
+.cap-instruction strong { color:var(--cream); font-weight:600; }
+
+.photo-grid { display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:24px; }
+.photo-slot {
+  background:var(--smoke); border-radius:12px; border:2px dashed rgba(255,255,255,.1);
+  aspect-ratio:4/3; display:flex; flex-direction:column; align-items:center; justify-content:center;
+  gap:6px; cursor:pointer; position:relative; overflow:hidden; transition:border-color .2s;
+}
+.photo-slot.has-photo { border-style:solid; border-color:var(--success); }
+.photo-slot-label { font-family:var(--font-data); font-size:10px; color:var(--ash-500); text-transform:uppercase; letter-spacing:.5px; }
+.photo-slot img { position:absolute; inset:0; width:100%; height:100%; object-fit:cover; border-radius:10px; }
+.photo-slot .slot-badge {
+  position:absolute; top:6px; right:6px; background:var(--success); color:white;
+  font-family:var(--font-data); font-size:9px; padding:2px 6px; border-radius:10px; z-index:2;
+}
+.photo-slot .slot-retake {
+  position:absolute; bottom:6px; right:6px; background:rgba(0,0,0,.7); color:white;
+  border:none; font-family:var(--font-body); font-size:10px; padding:4px 8px; border-radius:6px;
+  cursor:pointer; z-index:2;
+}
+.photo-slot-icon { opacity:.3; }
+
+.photo-slot-full {
+  grid-column: 1 / -1;
+  aspect-ratio: 16/9;
+}
+
+.cap-tip {
+  background:rgba(255,107,53,.06); border:1px solid rgba(255,107,53,.15);
+  border-radius:10px; padding:14px 16px; margin-bottom:24px;
+  font-size:13px; color:var(--ash-300); line-height:1.5;
+}
+.cap-tip strong { color:var(--ember); }
+
+.cap-footer {
+  padding:16px 20px calc(var(--safe-bottom)+16px);
+  background:var(--smoke); border-top:1px solid rgba(255,255,255,.06);
+  display:flex; gap:12px;
+}
+.cap-footer .btn { max-width:none; }
+
+/* ==================== ANALYZING ==================== */
+#analyzing {
+  background:var(--charcoal); justify-content:center; align-items:center;
+  text-align:center; padding:40px 32px;
+}
+.analyze-spinner {
+  width:64px; height:64px; border-radius:50%;
+  border:3px solid rgba(255,255,255,.08); border-top-color:var(--ember);
+  animation:spin 1s linear infinite; margin-bottom:32px;
+}
+@keyframes spin { to { transform:rotate(360deg); } }
+.analyze-title { font-family:var(--font-display); font-size:22px; font-weight:700; margin-bottom:8px; }
+.analyze-sub { font-size:14px; color:var(--ash-500); margin-bottom:32px; }
+.analyze-steps { text-align:left; max-width:300px; margin:0 auto; }
+.a-step { display:flex; align-items:center; gap:12px; padding:10px 0; font-size:14px; color:var(--ash-500); transition:color .3s; }
+.a-step.active { color:var(--cream); }
+.a-step.done { color:var(--success); }
+.a-step-icon { width:24px; height:24px; display:flex; align-items:center; justify-content:center; }
+.step-spin { width:16px; height:16px; border-radius:50%; border:2px solid rgba(255,255,255,.1); border-top-color:var(--ember); animation:spin .8s linear infinite; }
+.detection-feed {
+  margin-top:28px; padding-top:20px; border-top:1px solid rgba(255,255,255,.06);
+  max-width:300px; margin-left:auto; margin-right:auto; text-align:left;
+}
+.detection-feed-title { font-family:var(--font-data); font-size:10px; color:var(--ash-500); text-transform:uppercase; letter-spacing:1.2px; margin-bottom:12px; }
+.det-item {
+  display:flex; align-items:center; gap:10px; padding:8px 12px;
+  background:rgba(255,255,255,.03); border-radius:8px; margin-bottom:6px;
+  font-size:13px; animation:slideIn .3s ease;
+}
+@keyframes slideIn { from{opacity:0;transform:translateX(-10px)} to{opacity:1;transform:translateX(0)} }
+.det-dot { width:8px; height:8px; border-radius:50%; flex-shrink:0; }
+.det-dot.critical { background:var(--danger); }
+.det-dot.high { background:var(--ember); }
+.det-dot.moderate { background:var(--caution); }
+.det-dot.low { background:var(--success); }
+.det-conf { font-family:var(--font-data); font-size:10px; color:var(--ash-500); margin-left:auto; }
+
+/* ==================== RESULTS ==================== */
+#results { background:var(--cream); color:var(--charcoal); }
+.r-header {
+  background:var(--charcoal); color:var(--cream);
+  padding:calc(var(--safe-top)+24px) 24px 32px; text-align:center; position:relative;
+}
+.r-score-ring { width:120px; height:120px; margin:0 auto 16px; position:relative; }
+.r-score-ring svg { width:100%; height:100%; transform:rotate(-90deg); }
+.ring-bg { fill:none; stroke:rgba(255,255,255,.08); stroke-width:6; }
+.ring-fill { fill:none; stroke-width:6; stroke-linecap:round; transition:stroke-dashoffset 1.5s ease; }
+.r-score-val { position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center; }
+.score-num { font-family:var(--font-data); font-size:36px; font-weight:500; }
+.score-lbl { font-size:11px; color:var(--ash-500); text-transform:uppercase; letter-spacing:1px; }
+.r-grade { font-family:var(--font-display); font-size:20px; font-weight:700; margin-bottom:4px; }
+.r-std-used { font-family:var(--font-data); font-size:12px; color:var(--ash-500); }
+.r-stats {
+  display:flex; justify-content:center; gap:24px; margin-top:20px;
+  padding-top:16px; border-top:1px solid rgba(255,255,255,.08);
+}
+.r-stat-val { font-family:var(--font-data); font-size:20px; font-weight:500; }
+.r-stat-lbl { font-size:11px; color:var(--ash-500); }
+
+.r-body { padding:24px 20px calc(var(--safe-bottom)+100px); }
+
+/* Detection summary bar */
+.detect-summary {
+  display:flex; gap:8px; margin-bottom:20px; overflow-x:auto; padding-bottom:4px;
+  -webkit-overflow-scrolling:touch;
+}
+.detect-summary::-webkit-scrollbar { display:none; }
+.ds-chip {
+  flex-shrink:0; display:flex; align-items:center; gap:6px;
+  padding:8px 14px; border-radius:20px; font-size:13px; font-weight:600;
+  background:var(--white); box-shadow:0 1px 3px rgba(0,0,0,.06); cursor:pointer;
+  border:2px solid transparent; transition:border-color .2s;
+}
+.ds-chip.active { border-color:var(--ember); }
+.ds-chip .ds-count {
+  font-family:var(--font-data); font-size:11px; background:var(--ash-100);
+  padding:2px 7px; border-radius:10px;
+}
+
+/* Zone card */
+.z-card {
+  background:var(--white); border-radius:16px; padding:0;
+  margin-bottom:16px; box-shadow:0 1px 3px rgba(0,0,0,.06); overflow:hidden;
+}
+.z-card-head {
+  display:flex; align-items:center; justify-content:space-between;
+  padding:18px 20px; border-bottom:1px solid var(--ash-100);
+}
+.z-card-name { font-family:var(--font-display); font-size:16px; font-weight:700; }
+.z-card-range { font-family:var(--font-data); font-size:11px; color:var(--ash-500); }
+.z-badge { font-family:var(--font-data); font-size:12px; padding:4px 12px; border-radius:20px; color:white; }
+.z-badge.pass { background:var(--success); }
+.z-badge.warn { background:var(--caution); }
+.z-badge.fail { background:var(--danger); }
+
+/* Photo with AI overlays */
+.ai-photo-wrap { position:relative; background:#111; }
+.ai-photo { width:100%; height:220px; object-fit:cover; display:block; }
+.ai-photo-placeholder {
+  width:100%; height:220px; background:linear-gradient(135deg,#1a1a1a,#2d2d2d);
+  display:flex; align-items:center; justify-content:center;
+  font-family:var(--font-data); font-size:12px; color:var(--ash-500);
+}
+.ai-overlay { position:absolute; inset:0; pointer-events:none; }
+
+/* AI detection boxes */
+.ai-box {
+  position:absolute; border:2px solid; border-radius:4px;
+  transition:opacity .2s;
+}
+.ai-box.pulse { animation:boxPulse 2s ease-in-out infinite; }
+@keyframes boxPulse { 0%,100%{opacity:.7} 50%{opacity:1} }
+.ai-label {
+  position:absolute; top:-20px; left:0;
+  font-family:var(--font-data); font-size:9px; font-weight:500;
+  padding:2px 6px; border-radius:3px; color:white; white-space:nowrap;
+  pointer-events:auto; cursor:pointer;
+}
+.ai-conf {
+  position:absolute; bottom:-16px; right:0;
+  font-family:var(--font-data); font-size:8px; color:rgba(255,255,255,.6);
+}
+.ai-toggle-overlay {
+  position:absolute; top:10px; right:10px;
+  background:rgba(0,0,0,.7); color:white; border:1px solid rgba(255,255,255,.2);
+  font-family:var(--font-data); font-size:10px; padding:5px 10px; border-radius:6px;
+  cursor:pointer; z-index:5; pointer-events:auto;
+}
+
+/* Detection list */
+.det-list { padding:0 20px 20px; }
+.det-list-item {
+  display:flex; gap:12px; padding:14px 0;
+  border-bottom:1px solid var(--ash-100);
+}
+.det-list-item:last-child { border-bottom:none; }
+.det-sev { width:10px; height:10px; border-radius:50%; margin-top:5px; flex-shrink:0; }
+.det-sev.critical { background:var(--danger); }
+.det-sev.high { background:var(--ember); }
+.det-sev.moderate { background:var(--caution); }
+.det-sev.low { background:var(--success); }
+.det-info { flex:1; }
+.det-name { font-size:14px; font-weight:600; color:var(--charcoal); margin-bottom:2px; }
+.det-desc { font-size:13px; color:var(--ash-700); line-height:1.4; }
+.det-fix {
+  display:block; margin-top:6px; font-family:var(--font-data); font-size:11px;
+  color:var(--ember); line-height:1.4;
+}
+.det-tags { display:flex; gap:4px; margin-top:6px; flex-wrap:wrap; }
+.det-tag {
+  font-family:var(--font-data); font-size:9px; padding:2px 6px;
+  border-radius:3px; background:var(--ash-100); color:var(--ash-700);
+}
+.det-tag.fire-risk { background:rgba(237,27,46,.08); color:var(--danger); }
+
+.r-actions {
+  position:fixed; bottom:0; left:0; right:0;
+  padding:16px 20px calc(var(--safe-bottom)+16px);
+  background:linear-gradient(transparent, var(--cream) 30%);
+  display:flex; gap:12px;
+}
+.r-actions .btn { max-width:none; color:var(--charcoal); }
+.r-actions .btn-primary { color:white; }
+
+/* ==================== UTILITY ==================== */
+.fade-in { animation:fadeIn .5s ease; }
+@keyframes fadeIn { from{opacity:0;transform:translateY(10px)} to{opacity:1;transform:translateY(0)} }
+input[type="file"] { display:none; }
+::-webkit-scrollbar { width:4px; }
+::-webkit-scrollbar-track { background:transparent; }
+::-webkit-scrollbar-thumb { background:rgba(255,255,255,.1); border-radius:2px; }
+</style>
+</head>
+<body>
+
+<!-- ====== SPLASH ====== -->
+<div class="screen" id="splash">
+  <div class="splash-icon">
+    <svg viewBox="0 0 80 80" fill="none">
+      <circle cx="40" cy="40" r="38" stroke="rgba(255,107,53,0.2)" stroke-width="1.5"/>
+      <path d="M40 16L44.5 28H57L47 35.5L51 48L40 40.5L29 48L33 35.5L23 28H35.5L40 16Z" fill="none" stroke="#FF6B35" stroke-width="2" stroke-linejoin="round"/>
+      <circle cx="40" cy="40" r="12" fill="none" stroke="#ED1B2E" stroke-width="2"/>
+      <path d="M35 40h10M40 35v10" stroke="#ED1B2E" stroke-width="2" stroke-linecap="round"/>
+    </svg>
+  </div>
+  <h1 class="splash-title">Defense<span>Space</span></h1>
+  <div class="splash-rule"></div>
+  <p class="splash-sub">AI-powered defensible space assessment. Walk, photograph, and get instant analysis of every hazard around your home.</p>
+  <div class="splash-features">
+    <div class="splash-feat"><div class="splash-feat-icon">📷</div><div class="splash-feat-text">Photo Capture</div></div>
+    <div class="splash-feat"><div class="splash-feat-icon">🔍</div><div class="splash-feat-text">AI Detection</div></div>
+    <div class="splash-feat"><div class="splash-feat-icon">📋</div><div class="splash-feat-text">Action Plan</div></div>
+  </div>
+  <button class="btn btn-primary" onclick="showScreen('standard-select')">
+    Start Assessment
+  </button>
+  <div style="height:12px"></div>
+  <button class="btn btn-secondary" onclick="runDemo()">
+    View Demo Report
+  </button>
+</div>
+
+<!-- ====== STANDARD SELECTOR ====== -->
+<div class="screen hidden" id="standard-select">
+  <div style="padding:calc(var(--safe-top,0px)+24px) 24px 24px; flex:1; display:flex; flex-direction:column;">
+    <div class="screen-header">
+      <button class="back-btn" onclick="showScreen('splash')"><svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2"><path d="M13 4l-6 6 6 6"/></svg></button>
+      <h2 class="screen-title">Select Standard</h2>
+    </div>
+    <div class="standard-card selected" onclick="selectStd(this,'ca')" data-std="ca">
+      <div class="standard-name">California PRC 4291</div>
+      <span class="standard-tag">+ AB 3074 ZONE 0</span>
+      <p class="standard-desc">California's defensible space requirements including the 2023 Zone 0 ember-resistant mandate.</p>
+      <div class="standard-zones">
+        <span class="zone-chip z0">Zone 0 · 0-5ft</span>
+        <span class="zone-chip z1">Zone 1 · 5-30ft</span>
+        <span class="zone-chip z2">Zone 2 · 30-100ft</span>
+      </div>
+    </div>
+    <div class="standard-card" onclick="selectStd(this,'nfpa')" data-std="nfpa">
+      <div class="standard-name">NFPA Firewise USA</div>
+      <span class="standard-tag">NATIONAL</span>
+      <p class="standard-desc">National framework for wildfire risk reduction with Home Ignition Zone approach.</p>
+      <div class="standard-zones">
+        <span class="zone-chip z0">Immediate · 0-5ft</span>
+        <span class="zone-chip z1">Intermediate · 5-30ft</span>
+        <span class="zone-chip z2">Extended · 30-100ft</span>
+      </div>
+    </div>
+    <div class="spacer"></div>
+    <div style="padding:24px 0;">
+      <button class="btn btn-primary" onclick="startCapture()" style="margin:0 auto;">Continue →</button>
+    </div>
+  </div>
+</div>
+
+<!-- ====== CAPTURE WALKTHROUGH ====== -->
+<div class="screen hidden" id="capture">
+  <div class="cap-header">
+    <div class="cap-progress" id="capProgress"></div>
+    <div class="cap-zone-label" id="capZone">ZONE 0 · 0-5 FT</div>
+    <div class="cap-step-title" id="capTitle">Front of Structure</div>
+  </div>
+  <div class="cap-body" id="capBody"></div>
+  <div class="cap-footer">
+    <button class="btn btn-secondary btn-sm" onclick="capBack()" id="capBackBtn">Back</button>
+    <button class="btn btn-primary btn-sm" onclick="capNext()" id="capNextBtn" style="flex:2">Next →</button>
+  </div>
+</div>
+
+<!-- ====== AI ANALYSIS ====== -->
+<div class="screen hidden" id="analyzing">
+  <div class="analyze-spinner"></div>
+  <h2 class="analyze-title">AI Scanning Your Property</h2>
+  <p class="analyze-sub">Analyzing photos for defensible space hazards</p>
+  <div class="analyze-steps" id="aSteps">
+    <div class="a-step active" data-s="scan"><div class="a-step-icon"><div class="step-spin"></div></div>Scanning for objects & materials</div>
+    <div class="a-step" data-s="species"><div class="a-step-icon"><div class="step-spin"></div></div>Identifying plant species</div>
+    <div class="a-step" data-s="measure"><div class="a-step-icon"><div class="step-spin"></div></div>Estimating distances & clearances</div>
+    <div class="a-step" data-s="grade"><div class="a-step-icon"><div class="step-spin"></div></div>Grading against standards</div>
+    <div class="a-step" data-s="fix"><div class="a-step-icon"><div class="step-spin"></div></div>Generating fix recommendations</div>
+  </div>
+  <div class="detection-feed" id="detFeed">
+    <div class="detection-feed-title">Live Detections</div>
+  </div>
+</div>
+
+<!-- ====== RESULTS ====== -->
+<div class="screen hidden" id="results">
+  <div class="r-header">
+    <button class="back-btn" onclick="showScreen('splash')" style="position:absolute;top:calc(var(--safe-top,0px)+16px);left:16px;">
+      <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2"><path d="M13 4l-6 6 6 6"/></svg>
+    </button>
+    <div class="r-score-ring">
+      <svg viewBox="0 0 120 120"><circle class="ring-bg" cx="60" cy="60" r="52"/><circle class="ring-fill" id="scoreRing" cx="60" cy="60" r="52" stroke-dasharray="326.73" stroke-dashoffset="326.73"/></svg>
+      <div class="r-score-val"><div class="score-num" id="scoreNum">--</div><div class="score-lbl">of 100</div></div>
+    </div>
+    <div class="r-grade" id="rGrade">Analyzing...</div>
+    <div class="r-std-used" id="rStd">CA PRC 4291 + Zone 0</div>
+    <div class="r-stats" id="rStats"></div>
+  </div>
+  <div class="r-body" id="rBody"></div>
+  <div class="r-actions">
+    <button class="btn btn-secondary btn-sm" onclick="showScreen('splash')">New</button>
+    <button class="btn btn-primary btn-sm" onclick="shareResults()">Share Report</button>
+  </div>
+</div>
+
+<input type="file" id="camInput" accept="image/*" capture="environment">
+
+<script>
+// =====================================================
+// COMPREHENSIVE HAZARD DETECTION DATABASE
+// =====================================================
+const HAZARD_DB = {
+  // ---- STRUCTURES & MATERIALS ----
+  'wood_fence': {
+    name: 'Wood Fence', category: 'structure', severity: 'critical',
+    flammability: 'extreme', zones: [0,1],
+    desc: 'Combustible wood fencing acts as a direct fire path to the structure',
+    fix: 'Replace with metal, masonry, or ignition-resistant composite fencing. Steel post-and-rail or wrought iron recommended.',
+    tags: ['combustible', 'direct-contact-risk', 'ember-catcher'],
+    icon: '🪵'
+  },
+  'wood_deck': {
+    name: 'Wood Deck / Porch', category: 'structure', severity: 'critical',
+    flammability: 'extreme', zones: [0],
+    desc: 'Combustible decking in Zone 0 is the #1 home ignition risk. Embers collect underneath and in gaps.',
+    fix: 'Replace with composite (Trex/TimberTech), concrete, stone pavers, or metal decking. If keeping wood, install ember-resistant skirting.',
+    tags: ['combustible', 'ember-trap', 'structural-contact'],
+    icon: '🏗️'
+  },
+  'wood_pergola': {
+    name: 'Wood Pergola / Arbor', category: 'structure', severity: 'high',
+    flammability: 'high', zones: [0,1],
+    desc: 'Overhead combustible structure that can catch embers and radiate fire to the home.',
+    fix: 'Replace with metal or aluminum pergola. Remove combustible shade cloth.',
+    tags: ['combustible', 'overhead-hazard'],
+    icon: '🏗️'
+  },
+  'wood_siding': {
+    name: 'Wood Siding', category: 'structure', severity: 'critical',
+    flammability: 'extreme', zones: [0],
+    desc: 'Combustible exterior cladding is directly vulnerable to radiant heat and ember attack.',
+    fix: 'Replace with fiber cement (HardiePlank), stucco, brick, or metal siding. Minimum Class A fire rating.',
+    tags: ['combustible', 'structural'],
+    icon: '🏠'
+  },
+  'wood_shed': {
+    name: 'Wood Shed / Outbuilding', category: 'structure', severity: 'high',
+    flammability: 'high', zones: [0,1],
+    desc: 'Combustible outbuilding can ignite independently and radiate fire to main structure.',
+    fix: 'Replace with metal shed. If keeping, create 10ft clearance and harden with fire-resistant materials.',
+    tags: ['combustible', 'secondary-structure'],
+    icon: '🏚️'
+  },
+
+  // ---- GROUND COVER & MATERIALS ----
+  'bark_mulch': {
+    name: 'Bark Mulch / Wood Chips', category: 'ground', severity: 'critical',
+    flammability: 'extreme', zones: [0,1],
+    desc: 'Wood mulch ignites easily from embers and carries ground fire directly to structure foundation.',
+    fix: 'Replace with 3/4" crushed gravel, decorative rock, decomposed granite, or bare mineral soil within Zone 0.',
+    tags: ['combustible', 'ember-catcher', 'ground-fuel'],
+    icon: '🪨'
+  },
+  'dry_grass': {
+    name: 'Dry / Dead Grass', category: 'ground', severity: 'high',
+    flammability: 'extreme', zones: [0,1,2],
+    desc: 'Dried grass is flashy fuel — ignites instantly from embers and carries fire rapidly.',
+    fix: 'Mow to 4" maximum. Replace with fire-resistant groundcover, gravel, or irrigated green lawn.',
+    tags: ['combustible', 'flashy-fuel', 'ground-fuel'],
+    icon: '🌾'
+  },
+  'leaf_litter': {
+    name: 'Leaf Litter / Pine Needles', category: 'ground', severity: 'high',
+    flammability: 'high', zones: [0,1],
+    desc: 'Accumulated dead plant material on ground, roof, or in gutters catches embers easily.',
+    fix: 'Remove all accumulated debris. Establish monthly maintenance schedule during fire season.',
+    tags: ['combustible', 'ember-catcher', 'maintenance'],
+    icon: '🍂'
+  },
+
+  // ---- FLAMMABLE PLANTS (SPECIES-SPECIFIC) ----
+  'juniper': {
+    name: 'Juniper Bush', category: 'vegetation', severity: 'critical',
+    flammability: 'explosive', zones: [0,1,2],
+    desc: 'Juniper species contain volatile oils and dead interior material — they EXPLODE when ignited. One of the most dangerous landscape plants in WUI areas.',
+    fix: 'REMOVE IMMEDIATELY from Zones 0-1. Replace with fire-resistant species: lavender, rockrose, succulents, or ice plant.',
+    tags: ['volatile-oils', 'explosive', 'dead-interior', 'REMOVE'],
+    species: 'Juniperus spp.',
+    icon: '🌲'
+  },
+  'arborvitae': {
+    name: 'Arborvitae / Thuja', category: 'vegetation', severity: 'critical',
+    flammability: 'explosive', zones: [0,1],
+    desc: 'Dense, resinous foliage with dead interior. Burns intensely and generates massive embers.',
+    fix: 'Remove from Zones 0-1. Replace with deciduous hedging or masonry wall.',
+    tags: ['volatile-oils', 'explosive', 'hedge-fire-risk'],
+    species: 'Thuja spp.',
+    icon: '🌲'
+  },
+  'italian_cypress': {
+    name: 'Italian Cypress', category: 'vegetation', severity: 'critical',
+    flammability: 'extreme', zones: [0,1],
+    desc: 'Columnar shape acts as a chimney, pulling fire upward. Resinous needles burn intensely.',
+    fix: 'Remove or relocate 30+ feet from structure. Never plant as screen near buildings.',
+    tags: ['volatile-oils', 'chimney-effect', 'REMOVE'],
+    species: 'Cupressus sempervirens',
+    icon: '🌲'
+  },
+  'ornamental_grass': {
+    name: 'Ornamental Grass (Dried)', category: 'vegetation', severity: 'high',
+    flammability: 'extreme', zones: [0,1],
+    desc: 'Pampas grass and similar ornamentals become extreme fire hazards when dormant or dried.',
+    fix: 'Cut back annually. Remove from Zone 0. Replace with succulents or low-water fire-resistant species.',
+    tags: ['seasonal-risk', 'flashy-fuel'],
+    species: 'Cortaderia / Miscanthus spp.',
+    icon: '🌿'
+  },
+  'eucalyptus': {
+    name: 'Eucalyptus Tree', category: 'vegetation', severity: 'critical',
+    flammability: 'explosive', zones: [0,1,2],
+    desc: 'Extremely flammable bark strips, volatile oils, and tendency to generate burning embers that travel miles.',
+    fix: 'Remove within 30ft of structure. Thin canopy, remove bark strips, and clear all understory.',
+    tags: ['volatile-oils', 'ember-generator', 'bark-strips'],
+    species: 'Eucalyptus spp.',
+    icon: '🌳'
+  },
+  'pine_tree': {
+    name: 'Pine Tree', category: 'vegetation', severity: 'high',
+    flammability: 'high', zones: [0,1,2],
+    desc: 'Resinous needles, dropping pine cones, and needle accumulation make pines a significant fire risk.',
+    fix: 'Prune lower branches to 6-10ft. Remove within 10ft of roof. Clean needle drop monthly.',
+    tags: ['resinous', 'needle-drop', 'crown-fire-risk'],
+    species: 'Pinus spp.',
+    icon: '🌲'
+  },
+  'dead_tree': {
+    name: 'Dead / Dying Tree', category: 'vegetation', severity: 'critical',
+    flammability: 'extreme', zones: [0,1,2],
+    desc: 'Dead trees are standing torches — they ignite fast, burn long, and fall unpredictably.',
+    fix: 'Remove immediately. Dead trees are the highest priority removal item.',
+    tags: ['standing-dead', 'REMOVE-IMMEDIATELY'],
+    icon: '🪵'
+  },
+  'overgrown_shrubs': {
+    name: 'Overgrown Shrubs', category: 'vegetation', severity: 'moderate',
+    flammability: 'moderate', zones: [0,1],
+    desc: 'Dense, unmaintained shrubs touching the structure or each other create fuel continuity.',
+    fix: 'Prune to 2× height spacing between plants. Remove dead interior material. Clear from Zone 0.',
+    tags: ['fuel-continuity', 'ladder-fuel'],
+    icon: '🌿'
+  },
+  'ivy_vines': {
+    name: 'Climbing Ivy / Vines', category: 'vegetation', severity: 'high',
+    flammability: 'high', zones: [0],
+    desc: 'Vines on structures create a direct fire path from ground to roof. Dead material accumulates behind.',
+    fix: 'Remove all climbing vines from the structure. Pull roots and treat to prevent regrowth.',
+    tags: ['fire-ladder', 'structural-contact', 'REMOVE'],
+    icon: '🌿'
+  },
+
+  // ---- STORED ITEMS & OBJECTS ----
+  'trash_cans': {
+    name: 'Trash / Recycling Bins', category: 'stored', severity: 'high',
+    flammability: 'high', zones: [0],
+    desc: 'Plastic bins melt and ignite from embers. Contents (paper, cardboard) catch fire easily.',
+    fix: 'Store bins 30+ feet from structure or inside non-combustible enclosure. Use metal cans if possible.',
+    tags: ['plastic', 'combustible-contents', 'ember-catcher'],
+    icon: '🗑️'
+  },
+  'propane_tank': {
+    name: 'Propane Tank / Gas Grill', category: 'stored', severity: 'critical',
+    flammability: 'explosive', zones: [0,1],
+    desc: 'Pressurized fuel containers can BLEVE (boiling liquid expanding vapor explosion) during a fire.',
+    fix: 'Move 30+ feet from structure. Install on non-combustible pad. Maintain clear 10ft radius.',
+    tags: ['explosive', 'BLEVE-risk', 'pressurized'],
+    icon: '⛽'
+  },
+  'firewood_stack': {
+    name: 'Firewood Stack', category: 'stored', severity: 'critical',
+    flammability: 'extreme', zones: [0,1],
+    desc: 'Stacked firewood is a massive fuel load that burns for hours once ignited.',
+    fix: 'Relocate 30+ feet from any structure, uphill or cross-slope. Cover with metal sheet, not tarp.',
+    tags: ['massive-fuel-load', 'ember-catcher'],
+    icon: '🪵'
+  },
+  'patio_furniture': {
+    name: 'Combustible Patio Furniture', category: 'stored', severity: 'moderate',
+    flammability: 'moderate', zones: [0],
+    desc: 'Wicker, wood, or cushioned outdoor furniture catches embers and radiates heat to the home.',
+    fix: 'Use metal/stone furniture in Zone 0. Store cushions inside when not in use during fire season.',
+    tags: ['combustible', 'seasonal-management'],
+    icon: '🪑'
+  },
+  'vehicle': {
+    name: 'Parked Vehicle', category: 'stored', severity: 'high',
+    flammability: 'high', zones: [0,1],
+    desc: 'Vehicles contain fuel, rubber tires, and plastics that generate intense fire and toxic smoke.',
+    fix: 'Park on pavement/gravel 30+ feet from structure during red flag warnings. Keep gas tank full (reduces vapor).',
+    tags: ['fuel', 'rubber', 'secondary-fire'],
+    icon: '🚗'
+  },
+  'lumber_materials': {
+    name: 'Stored Lumber / Materials', category: 'stored', severity: 'high',
+    flammability: 'high', zones: [0,1],
+    desc: 'Construction materials, wood pallets, and stored lumber are large fuel loads.',
+    fix: 'Move 30+ feet from structures. Store under non-combustible covering on gravel pad.',
+    tags: ['fuel-load', 'construction-debris'],
+    icon: '🪵'
+  },
+  'playground_equipment': {
+    name: 'Wood Playground Set', category: 'stored', severity: 'moderate',
+    flammability: 'moderate', zones: [0,1],
+    desc: 'Wood play structures and rubber mulch underneath create combined fire risk.',
+    fix: 'Replace rubber mulch with gravel. Consider metal/composite play structure for Zone 0-1.',
+    tags: ['combustible', 'rubber-mulch'],
+    icon: '🎪'
+  },
+
+  // ---- BUILDING FEATURES ----
+  'unscreened_vents': {
+    name: 'Unscreened Vents / Openings', category: 'building', severity: 'critical',
+    flammability: 'ember-entry', zones: [0],
+    desc: 'Embers enter through unscreened vents, gaps, and openings — the #1 way homes ignite from inside.',
+    fix: 'Install 1/8" galvanized metal mesh on all vents, eave openings, and foundation gaps.',
+    tags: ['ember-entry', 'attic-fire-risk', 'CRITICAL'],
+    icon: '🔲'
+  },
+  'gutter_debris': {
+    name: 'Gutter Debris', category: 'building', severity: 'critical',
+    flammability: 'extreme', zones: [0],
+    desc: 'Leaf and needle-filled gutters are ember traps on the most vulnerable part of your home — the roofline.',
+    fix: 'Clean gutters monthly during fire season. Install metal gutter guards. Consider enclosed gutter systems.',
+    tags: ['ember-trap', 'roofline-risk', 'maintenance'],
+    icon: '🏠'
+  },
+  'wood_roof': {
+    name: 'Wood Shake Roof', category: 'building', severity: 'critical',
+    flammability: 'extreme', zones: [0],
+    desc: 'Wood shake/shingle roofs are the highest risk roofing material. Embers lodge between shakes.',
+    fix: 'Replace with Class A rated roofing: composition shingle, metal, tile, or slate.',
+    tags: ['structural', 'CRITICAL', 'full-replacement'],
+    icon: '🏠'
+  },
+  'single_pane_windows': {
+    name: 'Single-Pane Windows', category: 'building', severity: 'high',
+    flammability: 'radiant-heat', zones: [0],
+    desc: 'Single-pane glass breaks at lower temperatures, allowing ember entry.',
+    fix: 'Upgrade to dual-pane tempered glass. Consider fire shutters for high-risk exposures.',
+    tags: ['radiant-heat-vulnerable', 'ember-entry'],
+    icon: '🪟'
+  },
+  'open_eaves': {
+    name: 'Open / Unboxed Eaves', category: 'building', severity: 'high',
+    flammability: 'ember-entry', zones: [0],
+    desc: 'Open eaves expose the underside of roof decking to embers and radiant heat.',
+    fix: 'Box in eaves with fiber cement or stucco. Screen any remaining gaps with 1/8" mesh.',
+    tags: ['ember-entry', 'structural'],
+    icon: '🏠'
+  },
+
+  // ---- FUEL PATTERNS ----
+  'ladder_fuel': {
+    name: 'Ladder Fuel', category: 'fuel-pattern', severity: 'high',
+    flammability: 'creates-path', zones: [1,2],
+    desc: 'Shrubs under trees create a continuous fuel path from ground fire to tree canopy — "fire ladder".',
+    fix: 'Remove all shrubs within 10ft of tree drip line. Prune lower tree branches to 6-10ft height.',
+    tags: ['fuel-continuity', 'crown-fire-risk'],
+    icon: '🔥'
+  },
+  'continuous_vegetation': {
+    name: 'Dense Continuous Vegetation', category: 'fuel-pattern', severity: 'moderate',
+    flammability: 'high', zones: [1,2],
+    desc: 'Plants touching each other create unbroken fuel that carries fire toward the home.',
+    fix: 'Create spacing: 2× plant height on flat ground, 4× on slopes. Use hardscape breaks.',
+    tags: ['fuel-continuity'],
+    icon: '🌿'
+  },
+  'tree_canopy_contact': {
+    name: 'Tree Canopies Touching', category: 'fuel-pattern', severity: 'high',
+    flammability: 'crown-fire', zones: [1,2],
+    desc: 'Connected tree canopies allow crown fire to race across the property to the structure.',
+    fix: 'Thin trees to 10ft minimum canopy separation. Remove weakest trees first.',
+    tags: ['crown-fire-risk', 'thinning-needed'],
+    icon: '🌳'
+  }
+};
+
+// =====================================================
+// APP STATE
+// =====================================================
+const ST = {
+  std: 'ca',
+  step: 0,
+  photos: {},
+  detections: []
+};
+
+// =====================================================
+// CAPTURE STEPS
+// =====================================================
+const CAPTURE_STEPS = [
+  {
+    zone: 'Zone 0', color: '#ED1B2E', range: '0-5 ft',
+    title: 'Structure Close-Up',
+    instruction: 'Stand <strong>5 feet from your home\'s front wall</strong>. Photograph the base of the wall, foundation area, and anything attached (decks, fences, planters).',
+    tip: 'AI will scan for: wood fencing, wood decking, mulch type, trash cans, propane tanks, vents, siding material, climbing vines, and stored items.',
+    slots: [
+      { id: 'z0_front', label: 'Front wall', full: false },
+      { id: 'z0_left', label: 'Left side', full: false },
+      { id: 'z0_right', label: 'Right side', full: false },
+      { id: 'z0_back', label: 'Back wall', full: false }
+    ]
+  },
+  {
+    zone: 'Zone 0', color: '#ED1B2E', range: '0-5 ft',
+    title: 'Roof & Attachments',
+    instruction: 'Step back and photograph the <strong>roofline, gutters, eaves, and any overhead structures</strong> (pergolas, carports, patio covers).',
+    tip: 'AI will scan for: gutter debris, roof material, open eaves, wood pergolas, overhead vines, satellite dish mounts, and chimney spark arrestor.',
+    slots: [
+      { id: 'z0_roof', label: 'Roof & gutters', full: true },
+      { id: 'z0_attach', label: 'Attachments', full: false },
+      { id: 'z0_detail', label: 'Vents / gaps', full: false }
+    ]
+  },
+  {
+    zone: 'Zone 1', color: '#FF6B35', range: '5-30 ft',
+    title: 'Landscaping & Yard',
+    instruction: 'Stand <strong>30 feet from the house</strong> facing back toward it. Capture the entire landscaping zone — trees, shrubs, lawn, outbuildings, stored items.',
+    tip: 'AI will scan for: juniper bushes, arborvitae, dead trees, overgrown shrubs, firewood stacks, sheds, vehicles, playground equipment, ladder fuels, and plant spacing.',
+    slots: [
+      { id: 'z1_front_yard', label: 'Front yard', full: true },
+      { id: 'z1_back_yard', label: 'Back yard', full: true },
+      { id: 'z1_details', label: 'Problem areas', full: false },
+      { id: 'z1_outbuildings', label: 'Outbuildings', full: false }
+    ]
+  },
+  {
+    zone: 'Zone 2', color: '#F7A921', range: '30-100 ft',
+    title: 'Extended Property',
+    instruction: 'Walk to your <strong>property line or 100 feet out</strong>. Photograph the broader landscape, tree density, slope, and any wildland interface.',
+    tip: 'AI will scan for: vegetation density, tree spacing, canopy contact, dead standing trees, slope angle, eucalyptus, continuous brush, and fuel breaks.',
+    slots: [
+      { id: 'z2_overview', label: 'Overview', full: true },
+      { id: 'z2_slope', label: 'Slope / terrain', full: false },
+      { id: 'z2_tree_line', label: 'Tree line', full: false }
+    ]
+  }
+];
+
+// =====================================================
+// NAVIGATION
+// =====================================================
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.add('hidden'));
+  document.getElementById(id).classList.remove('hidden');
+}
+function selectStd(card, std) {
+  document.querySelectorAll('.standard-card').forEach(c => c.classList.remove('selected'));
+  card.classList.add('selected');
+  ST.std = std;
+}
+
+// =====================================================
+// CAPTURE FLOW
+// =====================================================
+function startCapture() {
+  ST.step = 0;
+  ST.photos = {};
+  renderCapture();
+  showScreen('capture');
+}
+function renderCapture() {
+  const step = CAPTURE_STEPS[ST.step];
+  // Progress
+  document.getElementById('capProgress').innerHTML = CAPTURE_STEPS.map((_,i) => {
+    let c = 'cap-dot';
+    if (i < ST.step) c += ' done';
+    else if (i === ST.step) c += ' active';
+    return `<div class="${c}"></div>`;
+  }).join('');
+  
+  document.getElementById('capZone').textContent = `${step.zone.toUpperCase()} · ${step.range}`;
+  document.getElementById('capZone').style.color = step.color;
+  document.getElementById('capTitle').textContent = step.title;
+  
+  let html = `
+    <p class="cap-instruction fade-in">${step.instruction}</p>
+    <div class="cap-tip fade-in"><strong>🔍 AI Detection:</strong> ${step.tip}</div>
+    <div class="photo-grid fade-in">
+      ${step.slots.map(slot => {
+        const photo = ST.photos[slot.id];
+        return `
+          <div class="photo-slot ${slot.full ? 'photo-slot-full' : ''} ${photo ? 'has-photo' : ''}" onclick="takePhoto('${slot.id}')">
+            ${photo ? `
+              <img src="${photo}" alt="${slot.label}">
+              <span class="slot-badge">✓</span>
+              <button class="slot-retake" onclick="event.stopPropagation();takePhoto('${slot.id}')">Retake</button>
+            ` : `
+              <svg class="photo-slot-icon" width="32" height="32" viewBox="0 0 32 32" fill="none" stroke="rgba(255,255,255,.25)" stroke-width="1.5">
+                <rect x="4" y="8" width="24" height="18" rx="3"/><circle cx="16" cy="17" r="5"/><path d="M12 8l1.5-3h5l1.5 3"/>
+              </svg>
+              <div class="photo-slot-label">${slot.label}</div>
+            `}
+          </div>
+        `;
+      }).join('')}
+    </div>
+  `;
+  document.getElementById('capBody').innerHTML = html;
+  document.getElementById('capBody').scrollTop = 0;
+  document.getElementById('capBackBtn').style.display = ST.step === 0 ? 'none' : '';
+  document.getElementById('capNextBtn').textContent = ST.step === CAPTURE_STEPS.length - 1 ? 'Analyze Property →' : 'Next Zone →';
+}
+
+function takePhoto(slotId) {
+  const input = document.getElementById('camInput');
+  input.onchange = (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (ev) => { ST.photos[slotId] = ev.target.result; renderCapture(); };
+    reader.readAsDataURL(file);
+  };
+  input.click();
+}
+
+function capBack() {
+  if (ST.step > 0) { ST.step--; renderCapture(); }
+  else showScreen('standard-select');
+}
+function capNext() {
+  if (ST.step < CAPTURE_STEPS.length - 1) { ST.step++; renderCapture(); }
+  else runAI();
+}
+
+// =====================================================
+// AI ANALYSIS (SIMULATED — real version calls Claude Vision)
+// =====================================================
+function runAI() {
+  showScreen('analyzing');
+  ST.detections = [];
+  
+  const steps = ['scan','species','measure','grade','fix'];
+  let i = 0;
+  const feed = document.getElementById('detFeed');
+  feed.innerHTML = '<div class="detection-feed-title">Live Detections</div>';
+  
+  // Simulate detections appearing based on which photos were taken
+  const hasZ0 = Object.keys(ST.photos).some(k => k.startsWith('z0'));
+  const hasZ1 = Object.keys(ST.photos).some(k => k.startsWith('z1'));
+  const hasZ2 = Object.keys(ST.photos).some(k => k.startsWith('z2'));
+  
+  // Build realistic detection set based on captured zones
+  const simDetections = [];
+  if (hasZ0 || Object.keys(ST.photos).length === 0) {
+    simDetections.push(
+      { ...HAZARD_DB.wood_fence, conf: 94, zone: 0, box: {t:20,l:5,w:40,h:55} },
+      { ...HAZARD_DB.trash_cans, conf: 97, zone: 0, box: {t:35,l:65,w:20,h:40} },
+      { ...HAZARD_DB.bark_mulch, conf: 89, zone: 0, box: {t:70,l:10,w:60,h:25} },
+      { ...HAZARD_DB.gutter_debris, conf: 82, zone: 0, box: {t:2,l:15,w:70,h:10} },
+      { ...HAZARD_DB.unscreened_vents, conf: 76, zone: 0, box: {t:25,l:50,w:15,h:12} }
+    );
+  }
+  if (hasZ1 || Object.keys(ST.photos).length === 0) {
+    simDetections.push(
+      { ...HAZARD_DB.juniper, conf: 96, zone: 1, box: {t:30,l:10,w:30,h:45} },
+      { ...HAZARD_DB.firewood_stack, conf: 98, zone: 1, box: {t:40,l:60,w:25,h:35} },
+      { ...HAZARD_DB.dead_tree, conf: 91, zone: 1, box: {t:5,l:70,w:20,h:70} },
+      { ...HAZARD_DB.ladder_fuel, conf: 85, zone: 1, box: {t:25,l:35,w:30,h:50} },
+      { ...HAZARD_DB.overgrown_shrubs, conf: 88, zone: 1, box: {t:55,l:5,w:35,h:30} }
+    );
+  }
+  if (hasZ2 || Object.keys(ST.photos).length === 0) {
+    simDetections.push(
+      { ...HAZARD_DB.continuous_vegetation, conf: 87, zone: 2, box: {t:40,l:5,w:90,h:40} },
+      { ...HAZARD_DB.tree_canopy_contact, conf: 83, zone: 2, box: {t:5,l:20,w:60,h:35} },
+      { ...HAZARD_DB.eucalyptus, conf: 79, zone: 2, box: {t:10,l:65,w:25,h:60} }
+    );
+  }
+  
+  let detIdx = 0;
+  
+  const stepInterval = setInterval(() => {
+    if (i > 0) {
+      const prev = document.querySelector(`[data-s="${steps[i-1]}"]`);
+      prev.classList.remove('active');
+      prev.classList.add('done');
+      prev.querySelector('.a-step-icon').innerHTML = `<svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="#2d5a27" stroke-width="2.5"><path d="M3 9l4 4L15 5"/></svg>`;
+    }
+    if (i < steps.length) {
+      document.querySelector(`[data-s="${steps[i]}"]`).classList.add('active');
+    }
+    i++;
+    if (i > steps.length) {
+      clearInterval(stepInterval);
+      clearInterval(detInterval);
+      ST.detections = simDetections;
+      setTimeout(() => showResults(), 600);
+    }
+  }, 1200);
+  
+  // Feed detections in real-time
+  const detInterval = setInterval(() => {
+    if (detIdx < simDetections.length) {
+      const d = simDetections[detIdx];
+      const sevClass = d.severity === 'critical' ? 'critical' : d.severity === 'high' ? 'high' : d.severity === 'moderate' ? 'moderate' : 'low';
+      feed.innerHTML += `
+        <div class="det-item">
+          <div class="det-dot ${sevClass}"></div>
+          <span>${d.icon} ${d.name}</span>
+          <span class="det-conf">${d.conf}%</span>
+        </div>
+      `;
+      feed.scrollTop = feed.scrollHeight;
+      detIdx++;
+    }
+  }, 450);
+}
+
+// =====================================================
+// RESULTS
+// =====================================================
+function showResults() {
+  const dets = ST.detections;
+  const critCount = dets.filter(d => d.severity === 'critical').length;
+  const highCount = dets.filter(d => d.severity === 'high').length;
+  const modCount = dets.filter(d => d.severity === 'moderate' || d.severity === 'low').length;
+  const totalPenalty = critCount * 8 + highCount * 4 + modCount * 2;
+  const score = Math.max(12, 100 - totalPenalty);
+  
+  let grade, gradeText;
+  if (score >= 85) { grade = 'pass'; gradeText = 'Well Protected'; }
+  else if (score >= 65) { grade = 'warn'; gradeText = 'Moderate Risk — Action Needed'; }
+  else if (score >= 40) { grade = 'fail'; gradeText = 'High Risk — Urgent Action Required'; }
+  else { grade = 'fail'; gradeText = 'Extreme Risk — Immediate Action Required'; }
+  
+  const ringColor = grade === 'pass' ? '#2d5a27' : grade === 'warn' ? '#b8860b' : '#c41e3a';
+  
+  showScreen('results');
+  
+  setTimeout(() => {
+    const ring = document.getElementById('scoreRing');
+    ring.style.stroke = ringColor;
+    ring.style.strokeDashoffset = 326.73 - (326.73 * score / 100);
+    document.getElementById('scoreNum').textContent = score;
+    document.getElementById('rGrade').textContent = gradeText;
+    document.getElementById('rStd').textContent = ST.std === 'ca' ? 'CA PRC 4291 + AB 3074 Zone 0' : 'NFPA Firewise USA';
+    document.getElementById('rStats').innerHTML = `
+      <div style="text-align:center"><div class="r-stat-val" style="color:var(--danger)">${critCount}</div><div class="r-stat-lbl">Critical</div></div>
+      <div style="text-align:center"><div class="r-stat-val" style="color:var(--ember)">${highCount}</div><div class="r-stat-lbl">High</div></div>
+      <div style="text-align:center"><div class="r-stat-val" style="color:var(--caution)">${modCount}</div><div class="r-stat-lbl">Moderate</div></div>
+      <div style="text-align:center"><div class="r-stat-val">${dets.length}</div><div class="r-stat-lbl">Total</div></div>
+    `;
+  }, 100);
+  
+  // Group detections by zone
+  const zones = [
+    { id: 0, name: ST.std === 'ca' ? 'Zone 0' : 'Immediate', color: '#ED1B2E', range: '0-5 ft' },
+    { id: 1, name: ST.std === 'ca' ? 'Zone 1' : 'Intermediate', color: '#FF6B35', range: '5-30 ft' },
+    { id: 2, name: ST.std === 'ca' ? 'Zone 2' : 'Extended', color: '#F7A921', range: '30-100 ft' }
+  ];
+  
+  let bodyHTML = '';
+  
+  // Detection summary chips
+  const categories = [...new Set(dets.map(d => d.category))];
+  const catLabels = { structure:'Structures', ground:'Ground Cover', vegetation:'Vegetation', stored:'Stored Items', building:'Building', 'fuel-pattern':'Fuel Patterns' };
+  bodyHTML += `<div class="detect-summary">`;
+  bodyHTML += `<div class="ds-chip active" onclick="filterDets('all',this)">All <span class="ds-count">${dets.length}</span></div>`;
+  categories.forEach(cat => {
+    const count = dets.filter(d => d.category === cat).length;
+    bodyHTML += `<div class="ds-chip" onclick="filterDets('${cat}',this)">${catLabels[cat]||cat} <span class="ds-count">${count}</span></div>`;
+  });
+  bodyHTML += `</div>`;
+  
+  // Zone cards with detections
+  zones.forEach(zone => {
+    const zoneDets = dets.filter(d => d.zone === zone.id);
+    if (zoneDets.length === 0) {
+      bodyHTML += `
+        <div class="z-card fade-in">
+          <div class="z-card-head">
+            <div><div class="z-card-name" style="color:${zone.color}">${zone.name}</div><div class="z-card-range">${zone.range}</div></div>
+            <span class="z-badge pass">CLEAR ✓</span>
+          </div>
+          <div style="padding:20px;text-align:center;color:#2d5a27;font-size:14px;">No hazards detected in this zone</div>
+        </div>
+      `;
+      return;
+    }
+    
+    const zoneCrit = zoneDets.filter(d => d.severity === 'critical').length;
+    const zoneScore = Math.max(0, 100 - zoneCrit * 15 - (zoneDets.length - zoneCrit) * 5);
+    const zBadge = zoneScore >= 80 ? 'pass' : zoneScore >= 50 ? 'warn' : 'fail';
+    const zBadgeText = zoneScore >= 80 ? 'PASS' : zoneScore >= 50 ? 'AT RISK' : 'FAIL';
+    
+    // Find a photo for this zone
+    const zonePrefix = `z${zone.id}`;
+    const photoKey = Object.keys(ST.photos).find(k => k.startsWith(zonePrefix));
+    const photo = photoKey ? ST.photos[photoKey] : null;
+    
+    bodyHTML += `
+      <div class="z-card fade-in" data-zone="${zone.id}">
+        <div class="z-card-head">
+          <div><div class="z-card-name" style="color:${zone.color}">${zone.name}</div><div class="z-card-range">${zone.range} · ${zoneDets.length} detections</div></div>
+          <span class="z-badge ${zBadge}">${zBadgeText} · ${zoneScore}</span>
+        </div>
+        <div class="ai-photo-wrap">
+          ${photo 
+            ? `<img class="ai-photo" src="${photo}" alt="${zone.name}">`
+            : `<div class="ai-photo-placeholder">${zone.name} — No photo captured (demo mode)</div>`
+          }
+          <div class="ai-overlay" id="overlay_z${zone.id}">
+            ${zoneDets.map(d => {
+              const sevColor = d.severity === 'critical' ? '#c41e3a' : d.severity === 'high' ? '#FF6B35' : '#b8860b';
+              return `
+                <div class="ai-box pulse" style="top:${d.box.t}%;left:${d.box.l}%;width:${d.box.w}%;height:${d.box.h}%;border-color:${sevColor}">
+                  <span class="ai-label" style="background:${sevColor}">${d.icon} ${d.name} ${d.conf}%</span>
+                </div>
+              `;
+            }).join('')}
+          </div>
+          <button class="ai-toggle-overlay" onclick="toggleOverlay('overlay_z${zone.id}', this)">🔍 Toggle AI</button>
+        </div>
+        <div class="det-list">
+          ${zoneDets.sort((a,b) => {
+            const sev = {critical:0,high:1,moderate:2,low:3};
+            return (sev[a.severity]||3) - (sev[b.severity]||3);
+          }).map(d => {
+            const sevClass = d.severity === 'critical' ? 'critical' : d.severity === 'high' ? 'high' : d.severity === 'moderate' ? 'moderate' : 'low';
+            return `
+              <div class="det-list-item" data-cat="${d.category}">
+                <div class="det-sev ${sevClass}"></div>
+                <div class="det-info">
+                  <div class="det-name">${d.icon} ${d.name} <span style="font-family:var(--font-data);font-size:11px;color:var(--ash-500);font-weight:400">${d.conf}% confident</span></div>
+                  <div class="det-desc">${d.desc}</div>
+                  <span class="det-fix">→ ${d.fix}</span>
+                  <div class="det-tags">
+                    ${d.severity === 'critical' ? '<span class="det-tag fire-risk">CRITICAL</span>' : ''}
+                    ${d.flammability ? `<span class="det-tag fire-risk">${d.flammability} flammability</span>` : ''}
+                    ${d.species ? `<span class="det-tag">${d.species}</span>` : ''}
+                    ${(d.tags||[]).filter(t => t === 'REMOVE' || t === 'REMOVE-IMMEDIATELY').map(t => `<span class="det-tag fire-risk">${t}</span>`).join('')}
+                  </div>
+                </div>
+              </div>
+            `;
+          }).join('')}
+        </div>
+      </div>
+    `;
+  });
+  
+  document.getElementById('rBody').innerHTML = bodyHTML;
+}
+
+function toggleOverlay(id, btn) {
+  const overlay = document.getElementById(id);
+  const visible = overlay.style.display !== 'none';
+  overlay.style.display = visible ? 'none' : '';
+  btn.textContent = visible ? '🔍 Show AI' : '🔍 Toggle AI';
+}
+
+function filterDets(cat, chip) {
+  document.querySelectorAll('.ds-chip').forEach(c => c.classList.remove('active'));
+  chip.classList.add('active');
+  document.querySelectorAll('.det-list-item').forEach(item => {
+    item.style.display = (cat === 'all' || item.dataset.cat === cat) ? '' : 'none';
+  });
+}
+
+function shareResults() {
+  if (navigator.share) {
+    navigator.share({ title: 'DefenseSpace Assessment', text: `Defensible Space Score: ${document.getElementById('scoreNum').textContent}/100`, url: window.location.href });
+  } else {
+    alert('Share Report:\n\nIn production this generates a branded PDF with:\n• AI-annotated photos with detection boxes\n• Zone-by-zone scoring breakdown\n• Every detected hazard with fix recommendations\n• Prioritized action plan with cost estimates\n• Species identification guide\n• Maintenance schedule');
+  }
+}
+
+// =====================================================
+// DEMO MODE
+// =====================================================
+function runDemo() {
+  ST.std = 'ca';
+  ST.photos = {};
+  // Simulate full detection set
+  ST.detections = [
+    { ...HAZARD_DB.wood_fence, conf:94, zone:0, box:{t:20,l:5,w:40,h:55} },
+    { ...HAZARD_DB.trash_cans, conf:97, zone:0, box:{t:35,l:65,w:20,h:40} },
+    { ...HAZARD_DB.bark_mulch, conf:89, zone:0, box:{t:70,l:10,w:60,h:25} },
+    { ...HAZARD_DB.gutter_debris, conf:82, zone:0, box:{t:2,l:15,w:70,h:10} },
+    { ...HAZARD_DB.unscreened_vents, conf:76, zone:0, box:{t:25,l:50,w:15,h:12} },
+    { ...HAZARD_DB.wood_deck, conf:93, zone:0, box:{t:60,l:30,w:45,h:30} },
+    { ...HAZARD_DB.juniper, conf:96, zone:1, box:{t:30,l:10,w:30,h:45} },
+    { ...HAZARD_DB.firewood_stack, conf:98, zone:1, box:{t:40,l:60,w:25,h:35} },
+    { ...HAZARD_DB.dead_tree, conf:91, zone:1, box:{t:5,l:70,w:20,h:70} },
+    { ...HAZARD_DB.ladder_fuel, conf:85, zone:1, box:{t:25,l:35,w:30,h:50} },
+    { ...HAZARD_DB.overgrown_shrubs, conf:88, zone:1, box:{t:55,l:5,w:35,h:30} },
+    { ...HAZARD_DB.propane_tank, conf:95, zone:1, box:{t:50,l:75,w:18,h:25} },
+    { ...HAZARD_DB.continuous_vegetation, conf:87, zone:2, box:{t:40,l:5,w:90,h:40} },
+    { ...HAZARD_DB.tree_canopy_contact, conf:83, zone:2, box:{t:5,l:20,w:60,h:35} },
+    { ...HAZARD_DB.eucalyptus, conf:79, zone:2, box:{t:10,l:65,w:25,h:60} }
+  ];
+  showResults();
+}
+</script>
+</body>
+</html>
