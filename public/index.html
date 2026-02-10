@@ -326,18 +326,18 @@ html, body {
 .det-sev.moderate { background:var(--caution); }
 .det-sev.low { background:var(--success); }
 .det-info { flex:1; }
-.det-name { font-size:14px; font-weight:600; color:var(--charcoal); margin-bottom:2px; }
-.det-desc { font-size:13px; color:var(--ash-700); line-height:1.4; }
+.det-name { font-size:16px; font-weight:600; color:var(--charcoal); margin-bottom:4px; }
+.det-desc { font-size:14px; color:var(--ash-700); line-height:1.5; }
 .det-fix {
-  display:block; margin-top:6px; font-family:var(--font-data); font-size:11px;
-  color:#9B3A0A; line-height:1.4;
+  display:block; margin-top:8px; font-family:var(--font-body); font-size:13px;
+  font-weight:600; color:#7B2D08; line-height:1.5;
 }
-.det-tags { display:flex; gap:4px; margin-top:6px; flex-wrap:wrap; }
+.det-tags { display:flex; gap:5px; margin-top:8px; flex-wrap:wrap; }
 .det-tag {
-  font-family:var(--font-data); font-size:9px; padding:2px 6px;
-  border-radius:3px; background:var(--ash-100); color:var(--ash-700);
+  font-family:var(--font-data); font-size:10px; padding:3px 8px;
+  border-radius:4px; background:var(--ash-100); color:var(--ash-700);
 }
-.det-tag.fire-risk { background:rgba(237,27,46,.08); color:var(--danger); }
+.det-tag.fire-risk { background:rgba(237,27,46,.1); color:var(--danger); }
 
 .r-actions {
   position:fixed; bottom:0; left:0; right:0;
@@ -347,6 +347,30 @@ html, body {
 }
 .r-actions .btn { max-width:none; color:var(--charcoal); }
 .r-actions .btn-primary { color:white; }
+
+/* ==================== DARK MODE TOGGLE ==================== */
+.theme-toggle {
+  position:absolute; top:calc(var(--safe-top,0px)+16px); right:16px;
+  background:rgba(255,255,255,.1); border:1px solid rgba(255,255,255,.2);
+  color:var(--cream); font-family:var(--font-data); font-size:11px;
+  padding:6px 12px; border-radius:8px; cursor:pointer; z-index:5;
+}
+#results.dark-mode { background:var(--charcoal); color:var(--cream); }
+#results.dark-mode .r-body { color:var(--cream); }
+#results.dark-mode .r-actions { background:linear-gradient(transparent, var(--charcoal) 30%); }
+#results.dark-mode .r-actions .btn-secondary { color:var(--cream); border-color:rgba(255,255,255,.15); background:rgba(255,255,255,.08); }
+#results.dark-mode .z-card { background:var(--smoke); box-shadow:none; }
+#results.dark-mode .z-card-head { border-bottom-color:rgba(255,255,255,.08); }
+#results.dark-mode .det-list-item { border-bottom-color:rgba(255,255,255,.08); }
+#results.dark-mode .det-name { color:var(--cream); }
+#results.dark-mode .det-desc { color:var(--ash-300); }
+#results.dark-mode .det-fix { color:#FF8C5A; }
+#results.dark-mode .det-tag { background:rgba(255,255,255,.08); color:var(--ash-300); }
+#results.dark-mode .det-tag.fire-risk { background:rgba(237,27,46,.15); color:#FF6B7A; }
+#results.dark-mode .ds-chip { background:var(--smoke); color:var(--cream); box-shadow:none; }
+#results.dark-mode .ds-chip .ds-count { background:rgba(255,255,255,.08); color:var(--ash-300); }
+#results.dark-mode .detect-summary { border-color:rgba(255,255,255,.08); }
+#results.dark-mode .theme-toggle { background:rgba(255,255,255,.15); }
 
 /* ==================== UTILITY ==================== */
 .fade-in { animation:fadeIn .5s ease; }
@@ -457,6 +481,7 @@ input[type="file"] { display:none; }
     <button class="back-btn" onclick="showScreen('splash')" style="position:absolute;top:calc(var(--safe-top,0px)+16px);left:16px;">
       <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2"><path d="M13 4l-6 6 6 6"/></svg>
     </button>
+    <button class="theme-toggle" onclick="toggleTheme()">Light / Dark</button>
     <div class="r-score-ring">
       <svg viewBox="0 0 120 120"><circle class="ring-bg" cx="60" cy="60" r="52"/><circle class="ring-fill" id="scoreRing" cx="60" cy="60" r="52" stroke-dasharray="326.73" stroke-dashoffset="326.73"/></svg>
       <div class="r-score-val"><div class="score-num" id="scoreNum">--</div><div class="score-lbl">of 100</div></div>
@@ -1135,6 +1160,13 @@ function filterDets(cat, chip) {
   document.querySelectorAll('.det-list-item').forEach(item => {
     item.style.display = (cat === 'all' || item.dataset.cat === cat) ? '' : 'none';
   });
+}
+
+function toggleTheme() {
+  const results = document.getElementById('results');
+  const btn = results.querySelector('.theme-toggle');
+  results.classList.toggle('dark-mode');
+  btn.textContent = results.classList.contains('dark-mode') ? '☀ Light' : '● Dark';
 }
 
 function shareResults() {
